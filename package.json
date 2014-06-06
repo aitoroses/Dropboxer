@@ -1,0 +1,17 @@
+{
+  "name": "Dropboxer",
+  "version": "0.1.0",
+  "description": "Dropbox API Server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "koa": "^0.6.2",
+    "thunkify": "^2.1.2",
+    "co": "^3.0.6",
+    "dropbox": "^0.10.2"
+  }
+}

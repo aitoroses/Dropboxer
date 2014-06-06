@@ -1,0 +1,1 @@
+nodemon --exec "node --harmony" index.js
