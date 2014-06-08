@@ -21,3 +21,9 @@ function accountInfo(callback) {
 	client.getAccountInfo(C(callback));
 }
 exports.accountInfo = thunkify(accountInfo);
+
+// API for read a directory
+function readdir(dir, callback) {
+	client.readdir(dir, C(callback));
+}
+exports.readdir = thunkify(readdir);
