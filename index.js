@@ -1,3 +1,9 @@
+var fs = require('fs');
+var thunkify = require('thunkify');
+var fsstat = thunkify(fs.stat);
+var fsWriteFile = thunkify(fs.writeFile);
+var fsReadFile = thunkify(fs.readFile);
+
 var koa = require('koa'),
     Router = require('koa-router'),
     mount = require('koa-mount');
@@ -35,10 +41,34 @@ API.get('/stat', function *() {
 
 // GET File API
 API.get('/file', function *() {
-    var stat = yield Dropbox.stat('zrc_cs.jpg');
+    /*var stat = yield Dropbox.stat('zrc_cs.jpg');
     this.set('Content-Type', stat.mimeType);
     this.set('Content-Disposition', 'attachment; filename=' + stat.name);
-    this.body = yield Dropbox.readFile('zrc_cs.jpg');
+    this.body = yield Dropbox.readFile('zrc_cs.jpg');*/
+
+    var filename = 'zrc_cs.jpg',
+        mimeType = 'image/jpeg';
+
+    // path
+    var path = __dirname + '/cache/' + filename;
+
+    // Read from cache
+    try {
+        var fileStat = yield fsstat(path);
+        var file = yield fsReadFile(path);
+        if (file == null) {throw new Error('Not file found.')}
+        this.body = file;
+    } catch (e) {
+        // It's not present in cache, so load from Dropbox and cache the file
+        var dfile = yield Dropbox.readFile('zrc_cs.jpg');
+        yield fsWriteFile(path, dfile);
+        this.body = dfile;
+    }
+
+    // Set headers
+    this.set('Content-Type', mimeType);
+    this.set('Content-Disposition', 'attachment; filename=' + filename);
+
 });
 
 // GET Benchmark
