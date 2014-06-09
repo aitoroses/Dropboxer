@@ -53,7 +53,7 @@ API.get('/file/:filename', function *() {
         var fileStat = yield fsstat(path);
         var file = yield fsReadFile(path);
         if (file == null) {throw new Error('Not file found.')}
-        this.body = file;
+        this.body = new Buffer(file, 'binary').toString('base64');
     } catch (e) {
         // It's not present in cache, so load from Dropbox and cache the file
         try {
@@ -64,10 +64,11 @@ API.get('/file/:filename', function *() {
         }
         var dfile = yield Dropbox.readFile(filename);
         yield fsWriteFile(path, dfile);
-        this.body = dfile;
+        this.body = new Buffer(dfile, 'binary').toString('base64');
     }
 
     // Set headers
+    this.set('Content-Length', this.body.length);
     this.set('Content-Type', mimeType);
     this.set('Content-Disposition', 'attachment; filename=' + filename);
 
@@ -108,4 +109,4 @@ API.get('/benchmark', function *() {
 app.use(mount('/dropbox', API.middleware()));
 
 // Listen
-app.listen(3000);
+app.listen(3100);

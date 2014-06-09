@@ -1,0 +1,17 @@
+<head>
+  <title>meteor-dropbox</title>
+</head>
+
+<body>
+  {{> images}}
+</body>
+
+<template name="images">
+  {{#each images}}
+  	{{> image}}
+  {{/each}}
+</template>
+
+<template name="image">
+  <img src="{{src}}">
+</template>
