@@ -54,20 +54,20 @@ API.get('/benchmark', function *() {
     photos = photos.concat(photos);
     photos = photos.concat(photos);
 
-    // // Iteration using a for
-    // for (var i = 0; i < photos.length; i++) {
-    //     var name = photos[i];
-    //     console.log(name, i);
-    //     yield Dropbox.readFile(name);
-    // }
+    // Iteration using a for, sync yield - 85s
+    /* for (var i = 0; i < photos.length; i++) {
+        var name = photos[i];
+        console.log(name, i);
+        yield Dropbox.readFile(name);
+    } */
 
-    // Iteration using a map
+    // Iteration using a map, async yield - 11s
     var result = yield photos.map(function(name) {
         return Dropbox.readFile(name);
     });
 
     for (var i = 0; i < result.length; i++) {
-        console.log(photos[i], result[i].slice(0, 20))
+        console.log(photos[i], result[i].slice(0, 20));
     }
 
     this.body = 'Done. Look console';
