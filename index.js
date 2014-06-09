@@ -40,13 +40,9 @@ API.get('/stat', function *() {
 });
 
 // GET File API
-API.get('/file', function *() {
-    /*var stat = yield Dropbox.stat('zrc_cs.jpg');
-    this.set('Content-Type', stat.mimeType);
-    this.set('Content-Disposition', 'attachment; filename=' + stat.name);
-    this.body = yield Dropbox.readFile('zrc_cs.jpg');*/
+API.get('/file/:filename', function *() {
 
-    var filename = 'zrc_cs.jpg',
+    var filename = this.params['filename'],
         mimeType = 'image/jpeg';
 
     // path
@@ -60,7 +56,13 @@ API.get('/file', function *() {
         this.body = file;
     } catch (e) {
         // It's not present in cache, so load from Dropbox and cache the file
-        var dfile = yield Dropbox.readFile('zrc_cs.jpg');
+        try {
+            var stat = yield Dropbox.stat(filename);
+            mimeType = stat.mimeType;
+        } catch (e) {
+            this.body = e; return;
+        }
+        var dfile = yield Dropbox.readFile(filename);
         yield fsWriteFile(path, dfile);
         this.body = dfile;
     }
