@@ -1,3 +1,4 @@
+
 Dropboxer = {};
 
 /** Meteor collection for dropboxer */
@@ -16,8 +17,11 @@ function defaultResponse(next) {
 }
 
 if (Meteor.isServer) {
-    /** Return the list of files in the preconfigured folder */
+    var Fiber = Meteor.require("fibers");
+    var Future = Meteor.require("fibers/future");
+
     Meteor.methods({
+        /** Return the list of files in the preconfigured folder */
         'dropboxer-list': function() {
             var uri = 'http://' + host + ':' + port + '/dropbox/list';
             return HTTP.get(uri);
@@ -49,11 +53,37 @@ if (Meteor.isServer) {
             });
             // Sync now
             var now = new Date();
-            images.map(function(image) {
+            /*images.map(function(image) {
                 // Make an HTTP request for each file in the list
                 console.log(image, ' - ', new Date - now + 'ms');
                 return Meteor.call('dropboxer-file', [image]);
+            });*/
+            var futures = images.map(function(image){
+                // Setup a future for the current job
+                var future = new Future();
+
+                // A callback so the job can signal completion
+                var onComplete = future.resolver();
+
+                // Make the async job
+                console.log(image, ' - ', new Date - now + 'ms');
+                var uri = 'http://' + host + ':' + port + '/dropbox/file/' + image;
+                Meteor.http.get(uri, function(err, res){
+                    var imageObj = {
+                        filename: image,
+                        data: res.content,
+                        mime: res.headers['content-type'],
+                        created_at: new Date
+                    };
+                    _col.insert(imageObj);
+                    onComplete(err, imageObj);
+                });
+
+                // Return the future
+                return future;
             });
+
+            Future.wait(futures);
 
             return new Date - now + 'ms';
         }
